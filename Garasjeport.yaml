@@ -1,1 +1,72 @@
+esphome:
+  name: garasjebryggerhus
+  platform: ESP8266
+  board: d1_mini
+
+
+wifi:
+  ssid: "yournetwork"
+  password: "yoursecret"
+  # Optional manual IP
+  manual_ip:
+    static_ip: xxx.xxx.xxx.xxx
+    gateway: xxx.xxx.xxx.xxx
+    subnet: xxx.xxx.xxx.xxx
+    
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+web_server:
+  port: 80
+
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: D7
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "Garasje i bryggerhus"
+    device_class: garage_door
+    
+  - platform: template
+    name: "Audi"
+    device_class: presence
+    lambda: |-
+      if (id(ultrasonic_sensor1).state < 1.5) {
+        // car is in the garage
+        return true;
+      } else {
+        // no car
+        return false;
+      }   
+      
+switch:
+  - platform: gpio
+    pin: RX
+    id: relay
+  - platform: template
+    icon: "mdi:arrow-up-down-bold-outline"
+    name: "Portåpner Audi"
+    turn_on_action:
+    - switch.turn_on: relay
+    - delay: 500ms
+    - switch.turn_off: relay
+
+sensor:
+  - platform: ultrasonic
+    id: ultrasonic_sensor1
+    trigger_pin: D1
+    echo_pin: D2
+    icon: "mdi:car"
+    name: "Audi"
+    update_interval: 10s
+    filters:
+      filter_out: nan
+    timeout: 9m    
 
